@@ -3,7 +3,6 @@ package net.analizer.rxbuslib.annotations;
 import android.support.annotation.NonNull;
 
 import net.analizer.rxbuslib.events.EventType;
-import net.analizer.rxbuslib.events.SubscriberEvent;
 import net.analizer.rxbuslib.threads.EventThread;
 
 import java.lang.reflect.Method;
@@ -15,28 +14,10 @@ import java.util.Map;
 
 public class SubscriptionAnnotationProcessor implements AnnotationProcessor {
     @Override
-    public Map<EventType, SubscriberEvent> findAllSubscribers(@NonNull Object listener) {
-
-        Map<EventType, SubscriberEvent> subscriberMap = new HashMap<>();
-        Map<EventType, List<SourceMethod>> annotatedMethods = getAnnotatedMethods(listener.getClass());
-
-        if (!annotatedMethods.isEmpty()) {
-            for (EventType eventType : annotatedMethods.keySet()) {
-                List<SourceMethod> methodList = annotatedMethods.get(eventType);
-                SubscriberEvent subscriberEvent = new SubscriberEvent(
-                        listener, methodList, eventType.observeOnThread, eventType.subscribeOnThread
-                );
-                subscriberMap.put(eventType, subscriberEvent);
-            }
-        }
-
-        return subscriberMap;
-    }
-
-    private Map<EventType, List<SourceMethod>> getAnnotatedMethods(Class<?> listenerClass) {
+    public Map<EventType, List<SourceMethod>> findAllSubscribers(@NonNull Object listener) {
 
         Map<EventType, List<SourceMethod>> annotatedMethods = new HashMap<>();
-        for (Method method : listenerClass.getDeclaredMethods()) {
+        for (Method method : listener.getClass().getDeclaredMethods()) {
             // The compiler sometimes creates synthetic bridge methods as part of the
             // type erasure process. As of JDK8 these methods now include the same
             // annotations as the original declarations. They should be ignored for
@@ -66,10 +47,10 @@ public class SubscriptionAnnotationProcessor implements AnnotationProcessor {
                 Subscribe annotation = method.getAnnotation(Subscribe.class);
                 EventThread observeOnThread = annotation.observeOn();
                 EventThread subscribeOnThread = annotation.observeOn();
-                Tag[] tags = annotation.tags();
+                SubscribeTag[] tags = annotation.tags();
                 int tagLength = tags.length;
                 do {
-                    String tag = Tag.DEFAULT;
+                    String tag = SubscribeTag.DEFAULT;
                     if (tagLength > 0) {
                         tag = tags[tagLength - 1].value();
                     }
@@ -79,7 +60,7 @@ public class SubscriptionAnnotationProcessor implements AnnotationProcessor {
                     if (methodList == null) {
                         methodList = new ArrayList<>();
                     }
-                    methodList.add(new SourceMethod(method, parameterClazz));
+                    methodList.add(new SourceMethod(method, parameterClazz, listener));
                     annotatedMethods.put(eventType, methodList);
                     tagLength--;
                 } while (tagLength > 0);
@@ -105,10 +86,10 @@ public class SubscriptionAnnotationProcessor implements AnnotationProcessor {
                 SubscribeReplay annotation = method.getAnnotation(SubscribeReplay.class);
                 EventThread observeOnThread = annotation.observeOn();
                 EventThread subscribeOnThread = annotation.observeOn();
-                Tag[] tags = annotation.tags();
+                SubscribeTag[] tags = annotation.tags();
                 int tagLength = tags.length;
                 do {
-                    String tag = Tag.DEFAULT;
+                    String tag = SubscribeTag.DEFAULT;
                     if (tagLength > 0) {
                         tag = tags[tagLength - 1].value();
                     }
@@ -117,7 +98,7 @@ public class SubscriptionAnnotationProcessor implements AnnotationProcessor {
                     if (methodList == null) {
                         methodList = new ArrayList<>();
                     }
-                    methodList.add(new SourceMethod(method, parameterClazz));
+                    methodList.add(new SourceMethod(method, parameterClazz, listener));
                     annotatedMethods.put(eventType, methodList);
                     tagLength--;
                 } while (tagLength > 0);
@@ -168,5 +149,25 @@ public class SubscriptionAnnotationProcessor implements AnnotationProcessor {
         }
 
         return annotatedMethods;
+
+
+
+
+
+
+
+
+
+//        if (!annotatedMethods.isEmpty()) {
+//            for (EventType eventType : annotatedMethods.keySet()) {
+//                List<SourceMethod> methodList = annotatedMethods.get(eventType);
+//                SubscriberEvent subscriberEvent = new SubscriberEvent(
+//                        listener, methodList, eventType.observeOnThread, eventType.subscribeOnThread
+//                );
+//                subscriberMap.put(eventType, subscriberEvent);
+//            }
+//        }
+//
+//        return subscriberMap;
     }
 }

@@ -5,7 +5,6 @@ import android.support.annotation.NonNull;
 import net.analizer.rxbuslib.annotations.SourceMethod;
 import net.analizer.rxbuslib.threads.EventThread;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import rx.subjects.ReplaySubject;
@@ -21,11 +20,10 @@ import rx.subjects.ReplaySubject;
  */
 public class SubscriberReplayEvent extends SubscriberEvent {
 
-    public SubscriberReplayEvent(@NonNull Object target,
-                                 @NonNull List<SourceMethod> methodList,
+    public SubscriberReplayEvent(@NonNull List<SourceMethod> methodList,
                                  @NonNull EventThread observeThread,
                                  @NonNull EventThread subscribeThread) {
-        super(target, methodList, observeThread, subscribeThread);
+        super(methodList, observeThread, subscribeThread);
     }
 
     @Override
@@ -33,62 +31,17 @@ public class SubscriberReplayEvent extends SubscriberEvent {
         subject = ReplaySubject.create();
         subject.onBackpressureBuffer()
                 .observeOn(EventThread.getScheduler(observeThread))
-                .subscribeOn(EventThread.getScheduler(subscribeThread))
-//                .subscribe(new Observer<Object>() {
-//                    @Override
-//                    public void onCompleted() {
-//
-//                    }
-//
-//                    @Override
-//                    public void onError(Throwable e) {
-//
-//                    }
-//
-//                    @Override
-//                    public void onNext(Object event) {
-//                        try {
-//                            if (valid) {
-//                                handleEvent(event);
-//                            }
-//                        } catch (InvocationTargetException e) {
-//                            throwRuntimeException("Could not dispatch event: " + event.getClass() + " to subscriber " + SubscriberReplayEvent.this, e);
-//                        }
-//                    }
-//                });
-                .subscribe(event -> {
-                    try {
-                        if (valid) {
-                            handleEvent(event);
-                        }
-                    } catch (InvocationTargetException e) {
-                        throwRuntimeException("Could not dispatch event: " + event.getClass() + " to subscriber " + SubscriberReplayEvent.this, e);
-                    }
-                });
+                .subscribeOn(EventThread.getScheduler(subscribeThread));
     }
 
     @Override
     public String toString() {
-        return "[SubscriberReplayEvent " + methodList + "]";
+        return "[SubscriberReplayEvent " + methodList + " (" + String.valueOf(hashCode()) + ")]";
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        if (obj == null) {
-            return false;
-        }
-
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-
-        final SubscriberReplayEvent other = (SubscriberReplayEvent) obj;
-
-        return target == other.target && SubscriberEvent.class.isAssignableFrom(obj.getClass());
+        return super.equals(obj);
     }
 
 }

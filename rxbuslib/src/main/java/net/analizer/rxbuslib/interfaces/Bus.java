@@ -7,9 +7,9 @@ import net.analizer.rxbuslib.annotations.SubscriptionType;
 public interface Bus {
     String DEFAULT_IDENTIFIER = "default";
 
-    void register(@NonNull Object object);
+    void register(@NonNull Object listener);
 
-    void unRegister(@NonNull Object object);
+    void unRegister(@NonNull Object listener);
 
     void post(@SubscriptionType int subscriptionType, Object event, @NonNull String... tags);
 

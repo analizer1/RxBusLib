@@ -7,8 +7,8 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface Tag {
-    String DEFAULT = "default_tag";
+public @interface SubscribeTag {
+    String DEFAULT = "default_RxBus_SubscribeTag";
 
     String value() default DEFAULT;
 }

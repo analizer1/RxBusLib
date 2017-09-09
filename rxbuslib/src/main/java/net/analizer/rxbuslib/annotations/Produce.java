@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Produce {
-    Tag[] tags() default {};
+    SubscribeTag[] tags() default {};
 
     EventThread thread() default EventThread.MAIN_THREAD;
 }

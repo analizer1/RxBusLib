@@ -9,7 +9,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-import rx.Subscription;
 import rx.subjects.PublishSubject;
 import rx.subjects.Subject;
 
@@ -22,151 +21,148 @@ import rx.subjects.Subject;
  * <p>Two SubscriberEvent are equivalent when they refer to the same method on the same object (not class).   This
  * property is used to ensure that no subscriber method is registered more than once.
  */
+@SuppressWarnings("WeakerAccess")
 public class SubscriberEvent {
 
-    /**
-     * Object sporting the method.
-     */
-    final Object target;
     /**
      * Subscriber method.
      */
     final List<SourceMethod> methodList;
+
     /**
-     * Subscriber thread
+     * Thread where the Subscriber will observe on
      */
     final EventThread observeThread;
+
+    /**
+     * Thread where the Subscriber will subscribe or do the work on
+     */
     final EventThread subscribeThread;
+
     /**
      * RxJava {@link Subject}
      */
     Subject<Object, Object> subject;
+
     /**
      * Object hash code.
      */
     private final int hashCode;
+
     /**
-     * Should this Subscriber receive events?
+     * Create a new subscription
+     *
+     * @param methodList      List of methods to be invoked
+     * @param observeThread   Thread where the Subscriber will observe on
+     * @param subscribeThread Thread where the Subscriber will subscribe or do the work on
      */
-    boolean valid = true;
-
-    private Subscription subscribe;
-
-    public SubscriberEvent(@NonNull Object target,
-                           @NonNull List<SourceMethod> methodList,
+    public SubscriberEvent(@NonNull List<SourceMethod> methodList,
                            @NonNull EventThread observeThread,
                            @NonNull EventThread subscribeThread) {
 
-        this.target = target;
-        this.methodList = methodList;
+        this.hashCode = System.identityHashCode(this);
+        this.methodList = new ArrayList<>();
         this.observeThread = observeThread;
         this.subscribeThread = subscribeThread;
 
-        for (SourceMethod sourceMethod : methodList) {
-            sourceMethod.method.setAccessible(true);
-        }
         initObservable();
-
-        // Compute hash code eagerly since we know it will be used frequently and we cannot estimate the runtime of the
-        // target's hashCode call.
-        final int prime = 31;
-        hashCode = (prime + methodList.hashCode()) * prime + target.hashCode();
-    }
-
-    protected void initObservable() {
-        subject = PublishSubject.create();
-
-        subscribe = subject.onBackpressureBuffer()
-                .observeOn(EventThread.getScheduler(observeThread))
-                .subscribeOn(EventThread.getScheduler(subscribeThread))
-                .subscribe(event -> {
-                    try {
-                        if (valid) {
-                            handleEvent(event);
-                        }
-                    } catch (InvocationTargetException e) {
-                        throwRuntimeException("Could not dispatch event: " + event.getClass() + " to subscriber " + SubscriberEvent.this, e);
-                    }
-                });
-    }
-
-    public boolean isValid() {
-        return valid;
+        addMethodIfNotExist(methodList);
     }
 
     /**
-     * If invalidated, will subsequently refuse to handle events.
-     * <p/>
-     * Should be called when the wrapped object is unregistered from the Bus.
+     * UnSubscribe all observers and remove all method's references
      */
-    public boolean invalidate() {
-        valid = false;
-        if (!subject.hasObservers()) {
-            return unSubscribe();
-        }
+    public void unsubscribe() {
+        if (methodList != null) {
+            synchronized (methodList) {
+                for (SourceMethod sourceMethod : methodList) {
+                    sourceMethod.unsubscribe();
+                }
 
-        return false;
+                subject = null;
+                methodList.clear();
+            }
+        }
     }
 
-    public boolean unSubscribe() {
-        if (subscribe != null && !subscribe.isUnsubscribed()) {
-            subscribe.unsubscribe();
-            return true;
+    /**
+     * Complete the subject and remove all method's reference
+     */
+    public void complete() {
+        if (methodList != null) {
+            synchronized (methodList) {
+                subject.onCompleted();
+                methodList.clear();
+            }
         }
-
-        return false;
     }
 
-    public boolean unRegisterListener(@NonNull Object listener) {
+    /**
+     * Remove all methods of the given listener.
+     * onComplete() will be invoked if there are no more
+     * methods.
+     *
+     * @param listener the listener class/object to be removed
+     * @return the remaining number of subscribing methods
+     */
+    public int unRegisterListener(@NonNull Object listener) {
         List<SourceMethod> removeList = new ArrayList<>();
         for (SourceMethod sourceMethod : methodList) {
-            if (sourceMethod.clazz.equals(listener.getClass())) {
+            if (sourceMethod.isMemberOf(listener)) {
+                sourceMethod.unsubscribe();
                 removeList.add(sourceMethod);
             }
         }
 
         methodList.removeAll(removeList);
-        if (methodList.size() == 0) {
-            return invalidate();
+
+        int cnt = methodList.size();
+        if (cnt == 0) {
+            complete();
         }
 
-        return false;
+        return cnt;
     }
 
-    public void handle(Object event) {
-        subject.onNext(event);
+    /**
+     * @param events
+     */
+    public void emit(@NonNull Object... events) {
+        for (Object event : events) {
+            subject.onNext(event);
+        }
     }
 
     public Subject getSubject() {
         return subject;
     }
 
-    /**
-     * Invokes the wrapped subscriber method to handle {@code event}.
-     *
-     * @param event event to handle
-     * @throws IllegalStateException     if previously invalidated.
-     * @throws InvocationTargetException if the wrapped method throws any {@link Throwable} that is not
-     *                                   an {@link Error} ({@code Error}s are propagated as-is).
-     */
-    void handleEvent(Object event) throws InvocationTargetException {
-        if (!valid) {
-            throw new IllegalStateException(toString() + " has been invalidated and can no longer handle events.");
-        }
-        try {
+    public int addMethodIfNotExist(@NonNull List<SourceMethod> methodList) {
+        int addCnt = 0;
+        synchronized (this.methodList) {
             for (SourceMethod sourceMethod : methodList) {
-                sourceMethod.method.invoke(target, event);
+                if (!this.methodList.contains(sourceMethod)) {
+                    sourceMethod.method.setAccessible(true);
+                    sourceMethod.subscribeTo(subject);
+                    this.methodList.add(sourceMethod);
+                    addCnt++;
+                }
             }
-
-        } catch (IllegalAccessException e) {
-            throw new AssertionError(e);
-
-        } catch (InvocationTargetException e) {
-            if (e.getCause() instanceof Error) {
-                throw (Error) e.getCause();
-            }
-            throw e;
         }
+
+        return addCnt;
+    }
+
+    protected void initObservable() {
+        subject = PublishSubject.create();
+
+        subject.onBackpressureBuffer()
+                .observeOn(EventThread.getScheduler(observeThread))
+                .subscribeOn(EventThread.getScheduler(subscribeThread));
+    }
+
+    public List<SourceMethod> getMethodList() {
+        return methodList;
     }
 
     /**
@@ -174,7 +170,7 @@ public class SubscriberEvent {
      * InvocationTargetException}. If the specified {@link InvocationTargetException} does not have a
      * cause, neither will the {@link RuntimeException}.
      */
-    void throwRuntimeException(String msg, InvocationTargetException e) {
+    void throwRuntimeException(String msg, Exception e) {
         throwRuntimeException(msg, e.getCause());
     }
 
@@ -194,7 +190,7 @@ public class SubscriberEvent {
 
     @Override
     public String toString() {
-        return "[SubscriberEvent " + methodList + "]";
+        return "[SubscriberEvent " + methodList + " (" + String.valueOf(hashCode) + ")]";
     }
 
     @Override
@@ -204,20 +200,6 @@ public class SubscriberEvent {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        if (obj == null) {
-            return false;
-        }
-
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-
-        final SubscriberEvent other = (SubscriberEvent) obj;
-
-        return target == other.target && SubscriberEvent.class.isAssignableFrom(obj.getClass());
+        return this == obj || obj != null && getClass() == obj.getClass();
     }
 }
