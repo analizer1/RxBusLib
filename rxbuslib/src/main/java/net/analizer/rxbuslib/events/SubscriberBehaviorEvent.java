@@ -21,11 +21,10 @@ import rx.subjects.BehaviorSubject;
  */
 public class SubscriberBehaviorEvent extends SubscriberEvent {
 
-    public SubscriberBehaviorEvent(@NonNull Object target,
-                                   @NonNull List<SourceMethod> methodList,
+    public SubscriberBehaviorEvent(@NonNull List<SourceMethod> methodList,
                                    @NonNull EventThread observeThread,
                                    @NonNull EventThread subscribeThread) {
-        super(target, methodList, observeThread, subscribeThread);
+        super(methodList, observeThread, subscribeThread);
     }
 
     @Override
@@ -33,40 +32,16 @@ public class SubscriberBehaviorEvent extends SubscriberEvent {
         subject = BehaviorSubject.create();
         subject.onBackpressureBuffer()
                 .observeOn(EventThread.getScheduler(observeThread))
-                .subscribeOn(EventThread.getScheduler(subscribeThread))
-                .subscribe(event -> {
-                    try {
-                        if (valid) {
-                            handleEvent(event);
-                        }
-                    } catch (InvocationTargetException e) {
-                        throwRuntimeException("Could not dispatch event: " + event.getClass() + " to subscriber " + SubscriberBehaviorEvent.this, e);
-                    }
-                });
+                .subscribeOn(EventThread.getScheduler(subscribeThread));
     }
 
     @Override
     public String toString() {
-        return "[SubscriberBehaviorEvent " + methodList + "]";
+        return "[SubscriberBehaviorEvent " + methodList + " (" + String.valueOf(hashCode()) + ")]";
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-
-        if (obj == null) {
-            return false;
-        }
-
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-
-        final SubscriberBehaviorEvent other = (SubscriberBehaviorEvent) obj;
-
-        return target == other.target && SubscriberEvent.class.isAssignableFrom(obj.getClass());
+        return super.equals(obj);
     }
-
 }

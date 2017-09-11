@@ -2,17 +2,17 @@ package net.analizer.rxbus;
 
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Button;
 
 import net.analizer.rxbuslib.RxBus;
 import net.analizer.rxbuslib.annotations.Subscribe;
 import net.analizer.rxbuslib.annotations.SubscribeReplay;
-import net.analizer.rxbuslib.annotations.Tag;
+import net.analizer.rxbuslib.annotations.SubscribeTag;
 import net.analizer.rxbuslib.threads.EventThread;
 
 public class MainActivity extends AppCompatActivity {
@@ -21,14 +21,14 @@ public class MainActivity extends AppCompatActivity {
     @Subscribe(
             observeOn = EventThread.MAIN_THREAD,
             subscribeOn = EventThread.MAIN_THREAD,
-            tags = {@Tag("test")}
+            tags = {@SubscribeTag("test")}
     )
     public void testSubscibe(String msg) {
         Log.e(TAG, String.format("msg: %s -> %s", msg, Thread.currentThread()));
     }
 
     @SubscribeReplay(
-            tags = {@Tag("test")}
+            tags = {@SubscribeTag("test")}
     )
     public void testSubscibeReplay(String msg) {
         Log.e(TAG, String.format("msg replay: %s -> %s", msg, Thread.currentThread()));
@@ -37,7 +37,8 @@ public class MainActivity extends AppCompatActivity {
     RxBus bus = new RxBus();
     static int cnt = 0;
 
-    Object obj = null;
+    Object obj1 = null;
+    Object obj2 = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,30 +47,69 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(view -> {
-            Snackbar
-                    .make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                    .setAction("Action", null)
-                    .show();
-            bus.postPublish(String.format("test %s", cnt), "test");
-            bus.postReplay(String.format("test %s", cnt++), "test");
-            if (cnt >= 5) {
-                if (obj == null) {
-                    obj = new Object() {
-                        @SubscribeReplay(
-                                tags = {@Tag("test")}
-                        )
-                        public void testSubscibeReplay(String msg) {
-                            Log.e(TAG, String.format("obj replay: %s -> %s", msg, Thread.currentThread()));
-                        }
-                    };
-                    bus.register(obj);
-                }
+        Button subscribeMainActivity = findViewById(R.id.subscribeMainActivity);
+        Button subscribeObj1 = findViewById(R.id.subscribeObj1);
+        Button subscribeObj2 = findViewById(R.id.subscribeObj2);
+
+        Button unsubscribeMainActivity = findViewById(R.id.unsubscribeMainActivity);
+        Button unsubscribeObj1 = findViewById(R.id.unsubscribeObj1);
+        Button unsubscribeObj2 = findViewById(R.id.unsubscribeObj2);
+
+        subscribeMainActivity.setOnClickListener(v -> {
+            bus.register(MainActivity.this);
+        });
+
+        subscribeObj1.setOnClickListener(v -> {
+            if (obj1 == null) {
+                obj1 = new Object() {
+                    @SubscribeReplay(
+                            tags = {@SubscribeTag("test")}
+                    )
+                    public void testSubscibeReplay(String msg) {
+                        Log.e(TAG, String.format("obj1 replay: %s -> %s", msg, Thread.currentThread()));
+                    }
+                };
+            }
+
+            bus.register(obj1);
+        });
+
+        subscribeObj2.setOnClickListener(v -> {
+            if (obj2 == null) {
+                obj2 = new Object() {
+                    @SubscribeReplay(
+                            tags = {@SubscribeTag("test")}
+                    )
+                    public void testSubscibeReplay(String msg) {
+                        Log.e(TAG, String.format("obj2 replay: %s -> %s", msg, Thread.currentThread()));
+                    }
+                };
+            }
+
+            bus.register(obj2);
+        });
+
+        unsubscribeMainActivity.setOnClickListener(v -> {
+            bus.unRegister(MainActivity.this);
+        });
+
+        unsubscribeObj1.setOnClickListener(v -> {
+            if (obj1 != null) {
+                bus.unRegister(obj1);
             }
         });
 
-        bus.register(this);
+        unsubscribeObj2.setOnClickListener(v -> {
+            if (obj2 != null) {
+                bus.unRegister(obj2);
+            }
+        });
+
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(view -> {
+            bus.postPublish(String.format("test %s", cnt), "test");
+            bus.postReplay(String.format("test %s", cnt++), "test");
+        });
     }
 
     @Override
@@ -98,8 +138,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         bus.unRegister(this);
-        if (obj != null) {
-            bus.unRegister(obj);
+        if (obj1 != null) {
+            bus.unRegister(obj1);
+        }
+        if (obj2 != null) {
+            bus.unRegister(obj2);
         }
     }
 }
