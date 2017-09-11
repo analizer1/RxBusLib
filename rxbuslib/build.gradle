@@ -56,8 +56,8 @@ dependencies {
     testImplementation 'org.assertj:assertj-core:2.6.0'
 }
 
-def bintrayRepo       = 'maven'
-def bintrayName       = 'RxBusLib'
+def bintrayRepo       = 'bintray-analizer1-RxBusLib'
+def bintrayName       = 'analizer1-RxBusLib'
 def libName           = 'com.github.analizer1:rxbuslib'
 def publishedGroupId  = 'com.github.analizer1'
 def libraryName       = 'RxBusLib'
@@ -65,13 +65,13 @@ def artifact          = 'rxbuslib'
 def libraryDescription= 'This is an experimental implementation of an event bus using Rx Subjects (PublishSubject, ReplaySubject, and BehaviorSubject) for Android'
 def siteUrl           = 'https://github.com/analizer1/RxBusLib'
 def gitUrl            = 'https://github.com/analizer1/RxBusLib.git'
-def libraryVersion    = '0.1'
 def developerId       = 'analizer1'
 def developerName     = 'Panatchai Vathanasri'
 def developerEmail    = 'analizer1@gmail.com'
 def licenseName       = 'The Apache Software License, Version 2.0'
 def licenseUrl        = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
 def allLicenses       = ["Apache-2.0"]
+group = "com.github.analizer"
 
 install {
     repositories.mavenInstaller {
@@ -80,15 +80,15 @@ install {
             project {
                 packaging 'aar'
 
-                name libName
+                name libraryName
                 description = libraryDescription
                 url siteUrl
 
                 // Set your license
                 licenses {
                     license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        name licenseName
+                        url licenseUrl
                     }
                 }
 
@@ -140,9 +140,9 @@ bintray {
 
     configurations = ['archives']
     pkg {
-        repo = bintrayRepo
+        repo = libraryName
         // it is the name that appears in bintray when logged
-        name = bintrayName
+        name = libraryName
         websiteUrl = siteUrl
         vcsUrl = gitUrl
         licenses = allLicenses
