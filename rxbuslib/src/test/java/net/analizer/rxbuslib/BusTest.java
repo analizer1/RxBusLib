@@ -26,7 +26,6 @@ import static junit.framework.Assert.assertEquals;
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 16)
 public class BusTest {
-    private static final String BUS_IDENTIFIER = "test-bus";
 
     private RxBus bus;
 
