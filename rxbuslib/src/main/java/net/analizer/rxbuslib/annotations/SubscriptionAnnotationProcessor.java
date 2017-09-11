@@ -103,6 +103,44 @@ public class SubscriptionAnnotationProcessor implements AnnotationProcessor {
                     tagLength--;
                 } while (tagLength > 0);
 
+            } else if (method.isAnnotationPresent(SubscribeBehavior.class)) {
+                Class<?>[] parameterTypes = method.getParameterTypes();
+                if (parameterTypes.length != 1) {
+                    throw new IllegalArgumentException("Method " + method + " has @SubscribeBehavior annotation but requires "
+                            + parameterTypes.length + " arguments.  Methods must require a single argument.");
+                }
+
+                Class<?> parameterClazz = parameterTypes[0];
+                if (parameterClazz.isInterface()) {
+                    throw new IllegalArgumentException("Method " + method + " has @SubscribeBehavior annotation on " + parameterClazz
+                            + " which is an interface.  Subscription must be on a concrete class type.");
+                }
+
+                if ((method.getModifiers() & Modifier.PUBLIC) == 0) {
+                    throw new IllegalArgumentException("Method " + method + " has @SubscribeBehavior annotation on " + parameterClazz
+                            + " but is not 'public'.");
+                }
+
+                SubscribeBehavior annotation = method.getAnnotation(SubscribeBehavior.class);
+                EventThread observeOnThread = annotation.observeOn();
+                EventThread subscribeOnThread = annotation.observeOn();
+                SubscribeTag[] tags = annotation.tags();
+                int tagLength = tags.length;
+                do {
+                    String tag = SubscribeTag.DEFAULT;
+                    if (tagLength > 0) {
+                        tag = tags[tagLength - 1].value();
+                    }
+                    EventType eventType = new EventType(SubscriptionType.BEHAVIOR, tag, observeOnThread, subscribeOnThread);
+                    List<SourceMethod> methodList = annotatedMethods.get(eventType);
+                    if (methodList == null) {
+                        methodList = new ArrayList<>();
+                    }
+                    methodList.add(new SourceMethod(method, parameterClazz, listener));
+                    annotatedMethods.put(eventType, methodList);
+                    tagLength--;
+                } while (tagLength > 0);
+
             }
 //            else if (method.isAnnotationPresent(Produce.class)) {
 //                Class<?>[] parameterTypes = method.getParameterTypes();

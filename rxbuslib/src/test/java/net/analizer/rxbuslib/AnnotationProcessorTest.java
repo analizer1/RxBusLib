@@ -224,7 +224,7 @@ public class AnnotationProcessorTest {
     }
 
     @Test
-    public void testObjectId() {
+    public void testObjectUniqueInstanceId() {
         StringCatcher catcher1 = new StringCatcher();
         int id1 = System.identityHashCode(catcher1);
 

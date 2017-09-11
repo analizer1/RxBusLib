@@ -13,4 +13,6 @@ public @interface SubscribeBehavior {
     SubscribeTag[] tags() default {};
 
     EventThread thread() default EventThread.MAIN_THREAD;
+    EventThread observeOn() default EventThread.MAIN_THREAD;
+    EventThread subscribeOn() default EventThread.NEW_THREAD;
 }

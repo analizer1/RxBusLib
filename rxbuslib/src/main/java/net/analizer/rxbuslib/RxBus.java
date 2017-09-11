@@ -5,6 +5,7 @@ import android.util.Log;
 
 import net.analizer.rxbuslib.annotations.AnnotationProcessor;
 import net.analizer.rxbuslib.annotations.SourceMethod;
+import net.analizer.rxbuslib.annotations.SubscribeTag;
 import net.analizer.rxbuslib.annotations.SubscriptionAnnotationProcessor;
 import net.analizer.rxbuslib.annotations.SubscriptionType;
 import net.analizer.rxbuslib.events.EventType;
@@ -87,7 +88,7 @@ public class RxBus implements Bus {
         if (listener == null) {
             return;
         }
-        
+
         mEnforcer.enforce(this);
 
         if (BuildConfig.DEBUG) {
@@ -165,6 +166,10 @@ public class RxBus implements Bus {
 
     @Override
     public void post(@SubscriptionType int subscriptionType, Object event, @NonNull String... tags) {
+        if (tags == null || tags.length == 0) {
+            tags = new String[]{SubscribeTag.DEFAULT};
+        }
+
         for (String tag : tags) {
             EventType eventType = new EventType(subscriptionType, tag);
             SubscriberEvent subscriberEvent = mSubscriberMap.get(eventType);

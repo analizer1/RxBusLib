@@ -13,22 +13,22 @@ public class SourceMethod {
     /**
      * The listener object
      */
-    public Object listener;
+    public final Object listener;
 
     /**
      * The subscription method
      */
-    public Method method;
+    public final Method method;
 
     /**
      * Class type of the method's parameter
      */
-    public Class<?> parameterClass;
+    public final Class<?> parameterClass;
 
     /**
      * Method observer
      */
-    public Observer<Object> observer;
+    public final Observer<Object> observer;
 
     /**
      * The subscription of the observer
@@ -38,7 +38,7 @@ public class SourceMethod {
     /**
      * This is the instant id of the parent class or object
      */
-    private int instanceId;
+    public final int instanceId;
 
     public SourceMethod(@NonNull Method method,
                         @NonNull Class<?> parameterClass,
@@ -62,9 +62,57 @@ public class SourceMethod {
 
             @Override
             public void onNext(Object event) {
-                invoke(event);
+                if (isOfSameType(event)) {
+                    invoke(event);
+                }
             }
         };
+    }
+
+    private boolean isOfSameType(Object event) {
+        if (event == null) {
+            return false;
+        }
+
+        Class<?> aClass = event.getClass();
+        if ((aClass.equals(Integer.class) || aClass.equals(Integer.TYPE))
+                && (parameterClass.equals(Integer.class) || parameterClass.equals(Integer.TYPE))) {
+            return true;
+
+        } else if ((aClass.equals(Long.class) || aClass.equals(Long.TYPE))
+                && (parameterClass.equals(Long.class) || parameterClass.equals(Long.TYPE))) {
+            return true;
+
+        } else if ((aClass.equals(Character.class) || aClass.equals(Character.TYPE))
+                && (parameterClass.equals(Character.class) || parameterClass.equals(Character.TYPE))) {
+            return true;
+
+        } else if ((aClass.equals(Boolean.class) || aClass.equals(Boolean.TYPE))
+                && (parameterClass.equals(Boolean.class) || parameterClass.equals(Boolean.TYPE))) {
+            return true;
+
+        } else if ((aClass.equals(Double.class) || aClass.equals(Double.TYPE))
+                && (parameterClass.equals(Double.class) || parameterClass.equals(Double.TYPE))) {
+            return true;
+
+        } else if ((aClass.equals(Float.class) || aClass.equals(Float.TYPE))
+                && (parameterClass.equals(Float.class) || parameterClass.equals(Float.TYPE))) {
+            return true;
+
+        } else if ((aClass.equals(Byte.class) || aClass.equals(Byte.TYPE))
+                && (parameterClass.equals(Byte.class) || parameterClass.equals(Byte.TYPE))) {
+            return true;
+
+        } else if ((aClass.equals(Short.class) || aClass.equals(Short.TYPE))
+                && (parameterClass.equals(Short.class) || parameterClass.equals(Short.TYPE))) {
+            return true;
+
+        }
+//        else if (aClass.equals(String.class) && (parameterClass.equals(String.class))) {
+//            return true;
+//        }
+
+        return aClass.equals(parameterClass);
     }
 
     /**
@@ -106,6 +154,7 @@ public class SourceMethod {
      * @param events parameters to be passed into invoking method
      */
     private void invoke(Object... events) {
+
         try {
             method.invoke(listener, events);
 

@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class StringCatcher {
     public List<String> events = new ArrayList<>();
-    public List<String> eventTagA = new ArrayList<>();
+    public List<String> eventWithCustomTag = new ArrayList<>();
 
     @Subscribe
     public void hereHaveAString(String string) {
@@ -27,7 +27,7 @@ public class StringCatcher {
             tags = {@SubscribeTag("NotDefaultTag")}
     )
     public void hereHaveAStringWithTagA(String string) {
-        eventTagA.add(string);
+        eventWithCustomTag.add(string);
     }
 
     public void methodWithoutAnnotation(String string) {
