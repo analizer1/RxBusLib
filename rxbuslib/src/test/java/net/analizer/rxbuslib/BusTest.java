@@ -1340,6 +1340,37 @@ public class BusTest {
         subscriptions = bus.getSubscriptions();
         assertEquals(0, subscriptions.size());
     }
+
+    @Test
+    public void testPostNull() {
+        MixTypeCatcherBehavior catcherBehavior = new MixTypeCatcherBehavior();
+        bus.register(catcherBehavior);
+        bus.postBehavior(null);
+        assertEquals(0, catcherBehavior.eventString.size());
+        assertEquals(0, catcherBehavior.eventStringWithCustomTag.size());
+        assertEquals(0, catcherBehavior.eventStringReplay.size());
+        assertEquals(0, catcherBehavior.eventStringReplayWithCustomTag.size());
+        assertEquals(0, catcherBehavior.eventInt.size());
+        assertEquals(0, catcherBehavior.eventIntWithCustomTag.size());
+        assertEquals(0, catcherBehavior.eventReplayInt.size());
+        assertEquals(0, catcherBehavior.eventIntReplayWithCustomTag.size());
+        assertEquals(0, catcherBehavior.eventBehaviorDouble.size());
+        assertEquals(0, catcherBehavior.eventDoubleBehaviorWithCustomTag.size());
+        bus.unRegister(catcherBehavior);
+    }
+
+    @Test
+    public void testPostModel() {
+        ModelCatcher catcher = new ModelCatcher();
+        bus.register(catcher);
+        bus.postPublish(new Model("test1", 0));
+        bus.postBehavior(new Model("test2", 1));
+        assertEquals("test1", catcher.model.msg);
+        assertEquals(0, catcher.model.id);
+        assertEquals("test2", catcher.behaviorModel.msg);
+        assertEquals(1, catcher.behaviorModel.id);
+    }
+
 //    @Test
 //    public void ignoreSyntheticBridgeMethods() {
 //        SubscriberImpl catcher = new SubscriberImpl();

@@ -9,17 +9,17 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 
-import rx.subjects.PublishSubject;
-import rx.subjects.Subject;
+import io.reactivex.subjects.PublishSubject;
+import io.reactivex.subjects.Subject;
 
 /**
- * Wraps a single-argument 'subscriber' method on a specific object.
+ * Wraps a single-argument 'observer' method on a specific object.
  *
  * <p>This class only verifies the suitability of the method and event type if something fails.  Callers are expected to
  * verify their uses of this class.
  *
  * <p>Two SubscriberEvent are equivalent when they refer to the same method on the same object (not class).   This
- * property is used to ensure that no subscriber method is registered more than once.
+ * property is used to ensure that no observer method is registered more than once.
  */
 @SuppressWarnings("WeakerAccess")
 public class SubscriberEvent {
@@ -42,7 +42,7 @@ public class SubscriberEvent {
     /**
      * RxJava {@link Subject}
      */
-    Subject<Object, Object> subject;
+    Subject<Object> subject;
 
     /**
      * Object hash code.
@@ -91,7 +91,7 @@ public class SubscriberEvent {
     public void complete() {
         if (methodList != null) {
             synchronized (methodList) {
-                subject.onCompleted();
+                subject.onComplete();
                 methodList.clear();
             }
         }
@@ -156,8 +156,7 @@ public class SubscriberEvent {
     protected void initObservable() {
         subject = PublishSubject.create();
 
-        subject.onBackpressureBuffer()
-                .observeOn(EventThread.getScheduler(observeThread))
+        subject.observeOn(EventThread.getScheduler(observeThread))
                 .subscribeOn(EventThread.getScheduler(subscribeThread));
     }
 
