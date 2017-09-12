@@ -11,6 +11,7 @@ import android.widget.Button;
 
 import net.analizer.rxbuslib.RxBus;
 import net.analizer.rxbuslib.annotations.Subscribe;
+import net.analizer.rxbuslib.annotations.SubscribeBehavior;
 import net.analizer.rxbuslib.annotations.SubscribeReplay;
 import net.analizer.rxbuslib.annotations.SubscribeTag;
 import net.analizer.rxbuslib.threads.EventThread;
@@ -18,27 +19,43 @@ import net.analizer.rxbuslib.threads.EventThread;
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
 
+    private static int cnt = 0;
+    private RxBus bus = new RxBus();
+
+    private Object anonymousSubscriber1 = null;
+    private Object anonymousSubscriber2 = null;
+
     @Subscribe(
+            observeOn = EventThread.MAIN_THREAD,
+            subscribeOn = EventThread.MAIN_THREAD
+    )
+    public void testSubscibePublishDefault(String msg) {
+        print(String.format("msg: %s -> %s", msg, Thread.currentThread()));
+    }
+
+    @Subscribe(
+            // As of version 0.1, the consequent observeOn and subscribeOn are ignored.
             observeOn = EventThread.MAIN_THREAD,
             subscribeOn = EventThread.MAIN_THREAD,
             tags = {@SubscribeTag("test")}
     )
-    public void testSubscibe(String msg) {
-        Log.e(TAG, String.format("msg: %s -> %s", msg, Thread.currentThread()));
+    public void testSubscibePublishWithTag(String msg) {
+        print(String.format("msg: %s -> %s", msg, Thread.currentThread()));
     }
 
     @SubscribeReplay(
             tags = {@SubscribeTag("test")}
     )
     public void testSubscibeReplay(String msg) {
-        Log.e(TAG, String.format("msg replay: %s -> %s", msg, Thread.currentThread()));
+        print(String.format("msg replay: %s -> %s", msg, Thread.currentThread()));
     }
 
-    RxBus bus = new RxBus();
-    static int cnt = 0;
-
-    Object obj1 = null;
-    Object obj2 = null;
+    @SubscribeBehavior(
+            tags = {@SubscribeTag("test")}
+    )
+    public void testSubscibeBehavior(String msg) {
+        print(String.format("msg replay: %s -> %s", msg, Thread.currentThread()));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,33 +77,33 @@ public class MainActivity extends AppCompatActivity {
         });
 
         subscribeObj1.setOnClickListener(v -> {
-            if (obj1 == null) {
-                obj1 = new Object() {
+            if (anonymousSubscriber1 == null) {
+                anonymousSubscriber1 = new Object() {
                     @SubscribeReplay(
                             tags = {@SubscribeTag("test")}
                     )
                     public void testSubscibeReplay(String msg) {
-                        Log.e(TAG, String.format("obj1 replay: %s -> %s", msg, Thread.currentThread()));
+                        Log.e(TAG, String.format("anonymousSubscriber1 replay: %s -> %s", msg, Thread.currentThread()));
                     }
                 };
             }
 
-            bus.register(obj1);
+            bus.register(anonymousSubscriber1);
         });
 
         subscribeObj2.setOnClickListener(v -> {
-            if (obj2 == null) {
-                obj2 = new Object() {
+            if (anonymousSubscriber2 == null) {
+                anonymousSubscriber2 = new Object() {
                     @SubscribeReplay(
                             tags = {@SubscribeTag("test")}
                     )
                     public void testSubscibeReplay(String msg) {
-                        Log.e(TAG, String.format("obj2 replay: %s -> %s", msg, Thread.currentThread()));
+                        Log.e(TAG, String.format("anonymousSubscriber2 replay: %s -> %s", msg, Thread.currentThread()));
                     }
                 };
             }
 
-            bus.register(obj2);
+            bus.register(anonymousSubscriber2);
         });
 
         unsubscribeMainActivity.setOnClickListener(v -> {
@@ -94,14 +111,14 @@ public class MainActivity extends AppCompatActivity {
         });
 
         unsubscribeObj1.setOnClickListener(v -> {
-            if (obj1 != null) {
-                bus.unRegister(obj1);
+            if (anonymousSubscriber1 != null) {
+                bus.unRegister(anonymousSubscriber1);
             }
         });
 
         unsubscribeObj2.setOnClickListener(v -> {
-            if (obj2 != null) {
-                bus.unRegister(obj2);
+            if (anonymousSubscriber2 != null) {
+                bus.unRegister(anonymousSubscriber2);
             }
         });
 
@@ -138,11 +155,15 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         bus.unRegister(this);
-        if (obj1 != null) {
-            bus.unRegister(obj1);
+        if (anonymousSubscriber1 != null) {
+            bus.unRegister(anonymousSubscriber1);
         }
-        if (obj2 != null) {
-            bus.unRegister(obj2);
+        if (anonymousSubscriber2 != null) {
+            bus.unRegister(anonymousSubscriber2);
         }
+    }
+
+    private void print(String msg) {
+
     }
 }

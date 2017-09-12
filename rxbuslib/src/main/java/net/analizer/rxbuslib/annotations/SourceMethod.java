@@ -4,9 +4,9 @@ import android.support.annotation.NonNull;
 
 import java.lang.reflect.Method;
 
-import rx.Observer;
-import rx.Subscription;
-import rx.subjects.Subject;
+import io.reactivex.Observer;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.subjects.Subject;
 
 @SuppressWarnings("WeakerAccess")
 public class SourceMethod {
@@ -33,7 +33,7 @@ public class SourceMethod {
     /**
      * The subscription of the observer
      */
-    Subscription subscription;
+    Disposable disposable;
 
     /**
      * This is the instant id of the parent class or object
@@ -51,7 +51,12 @@ public class SourceMethod {
 
         this.observer = new Observer<Object>() {
             @Override
-            public void onCompleted() {
+            public void onSubscribe(Disposable d) {
+                disposable = d;
+            }
+
+            @Override
+            public void onComplete() {
                 // TODO: 9/9/17 handle onComplete SourceMethod
             }
 
@@ -132,20 +137,23 @@ public class SourceMethod {
      * @param subject Subject to be observed
      * @return Subscription
      */
-    public Subscription subscribeTo(@NonNull Subject<Object, Object> subject) {
-        if (subscription == null) {
-            subscription = subject.subscribe(observer);
+    public Disposable subscribeTo(@NonNull Subject<Object> subject) {
+        if (disposable == null) {
+            subject.subscribe(observer);
         }
-        return subscription;
+
+        return disposable;
     }
 
     /**
      * Un-subscribe to the previously subscribed Subject
      */
     public void unsubscribe() {
-        if (subscription != null && !subscription.isUnsubscribed()) {
-            subscription.unsubscribe();
+        if (disposable != null && !disposable.isDisposed()) {
+            disposable.dispose();
         }
+
+        disposable = null;
     }
 
     /**
@@ -159,9 +167,7 @@ public class SourceMethod {
             method.invoke(listener, events);
 
         } catch (Exception e) {
-            if (subscription != null && !subscription.isUnsubscribed()) {
-                subscription.unsubscribe();
-            }
+            unsubscribe();
         }
     }
 

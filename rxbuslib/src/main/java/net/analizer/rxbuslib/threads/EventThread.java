@@ -1,13 +1,10 @@
 package net.analizer.rxbuslib.threads;
 
-import android.os.Handler;
-
 import java.util.concurrent.Executor;
 
-import rx.Scheduler;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.android.schedulers.HandlerScheduler;
-import rx.schedulers.Schedulers;
+import io.reactivex.Scheduler;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.schedulers.Schedulers;
 
 public enum EventThread {
     /**
@@ -53,19 +50,9 @@ public enum EventThread {
     TRAMPOLINE,
 
     /**
-     * Creates and returns a Scheduler that executes work immediately on the current thread.
-     */
-    IMMEDIATE,
-
-    /**
      * Converts an {@link Executor} into a new Scheduler instance.
      */
-    EXECUTOR,
-
-    /**
-     * Scheduler which uses the provided {@link Handler} to execute actions.
-     */
-    HANDLER;
+    EXECUTOR;
 
     public static Scheduler getScheduler(EventThread thread) {
 
@@ -90,14 +77,8 @@ public enum EventThread {
             case TRAMPOLINE:
                 scheduler = Schedulers.trampoline();
                 break;
-            case IMMEDIATE:
-                scheduler = Schedulers.immediate();
-                break;
             case EXECUTOR:
                 scheduler = Schedulers.from(ThreadHandler.DEFAULT.getExecutor());
-                break;
-            case HANDLER:
-                scheduler = HandlerScheduler.from(ThreadHandler.DEFAULT.getHandler());
                 break;
             default:
                 scheduler = AndroidSchedulers.mainThread();
