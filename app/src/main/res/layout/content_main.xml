@@ -1,65 +1,84 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior"
-    tools:context="net.analizer.rxbus.MainActivity"
-    tools:showIn="@layout/activity_main">
+    xmlns:tools="http://schemas.android.com/tools">
 
-    <Button
-        android:text="subscribeMainActivity"
-        android:id="@+id/subscribeMainActivity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
 
-    <Button
-        android:text="subscribeObj1"
-        android:id="@+id/subscribeObj1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/subscribeMainActivity" />
+        <TextView
+            android:id="@+id/message_textView"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="start"
+            android:layout_weight="0.5"
+            android:scrollbars="vertical" />
 
-    <Button
-        android:text="subscribeObj2"
-        android:id="@+id/subscribeObj2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/subscribeObj1" />
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/controls_constraintLayout"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="0.5"
+            app:layout_behavior="@string/appbar_scrolling_view_behavior"
+            tools:context="net.analizer.rxbus.MainActivity"
+            tools:showIn="@layout/activity_main">
 
-    <Button
-        android:text="unsubscribeMainActivity"
-        android:id="@+id/unsubscribeMainActivity"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/subscribeObj2" />
+            <Button
+                android:id="@+id/subscribeMainActivity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="subscribeMainActivity"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
-        android:text="unsubscribeObj1"
-        android:id="@+id/unsubscribeObj1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/unsubscribeMainActivity" />
+            <Button
+                android:id="@+id/subscribeObj1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="subscribeObj1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/subscribeMainActivity" />
 
-    <Button
-        android:text="unsubscribeObj2"
-        android:id="@+id/unsubscribeObj2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/unsubscribeObj1" />
+            <Button
+                android:id="@+id/subscribeObj2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="subscribeObj2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/subscribeObj1" />
 
-</android.support.constraint.ConstraintLayout>
+            <Button
+                android:id="@+id/unsubscribeMainActivity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="unsubscribeMainActivity"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/subscribeObj2" />
+
+            <Button
+                android:id="@+id/unsubscribeObj1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="unsubscribeObj1"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/unsubscribeMainActivity" />
+
+            <Button
+                android:id="@+id/unsubscribeObj2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="unsubscribeObj2"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/unsubscribeObj1" />
+
+        </android.support.constraint.ConstraintLayout>
+    </LinearLayout>
+</layout>

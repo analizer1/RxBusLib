@@ -5,10 +5,9 @@ import android.support.annotation.NonNull;
 import net.analizer.rxbuslib.annotations.SourceMethod;
 import net.analizer.rxbuslib.threads.EventThread;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-import rx.subjects.BehaviorSubject;
+import io.reactivex.subjects.BehaviorSubject;
 
 /**
  * Wraps a single-argument 'subscriber' method on a specific object.
@@ -30,8 +29,7 @@ public class SubscriberBehaviorEvent extends SubscriberEvent {
     @Override
     protected final void initObservable() {
         subject = BehaviorSubject.create();
-        subject.onBackpressureBuffer()
-                .observeOn(EventThread.getScheduler(observeThread))
+        subject.observeOn(EventThread.getScheduler(observeThread))
                 .subscribeOn(EventThread.getScheduler(subscribeThread));
     }
 
