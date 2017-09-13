@@ -14,10 +14,10 @@ import io.reactivex.subjects.Subject;
 
 /**
  * Wraps a single-argument 'observer' method on a specific object.
- *
+ * <p>
  * <p>This class only verifies the suitability of the method and event type if something fails.  Callers are expected to
  * verify their uses of this class.
- *
+ * <p>
  * <p>Two SubscriberEvent are equivalent when they refer to the same method on the same object (not class).   This
  * property is used to ensure that no observer method is registered more than once.
  */
@@ -109,12 +109,14 @@ public class SubscriberEvent {
         List<SourceMethod> removeList = new ArrayList<>();
         for (SourceMethod sourceMethod : methodList) {
             if (sourceMethod.isMemberOf(listener)) {
-                sourceMethod.unsubscribe();
                 removeList.add(sourceMethod);
             }
         }
 
         methodList.removeAll(removeList);
+        for (SourceMethod sourceMethod : removeList) {
+            sourceMethod.unsubscribe();
+        }
 
         int cnt = methodList.size();
         if (cnt == 0) {
