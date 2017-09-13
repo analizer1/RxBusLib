@@ -13,22 +13,22 @@ public class SourceMethod {
     /**
      * The listener object
      */
-    public final Object listener;
+    public Object listener;
 
     /**
      * The subscription method
      */
-    public final Method method;
+    public Method method;
 
     /**
      * Class type of the method's parameter
      */
-    public final Class<?> parameterClass;
+    public Class<?> parameterClass;
 
     /**
      * Method observer
      */
-    public final Observer<Object> observer;
+    public Observer<Object> observer;
 
     /**
      * The subscription of the observer
@@ -153,6 +153,10 @@ public class SourceMethod {
             disposable.dispose();
         }
 
+        listener = null;
+        method = null;
+        parameterClass = null;
+        observer = null;
         disposable = null;
     }
 
