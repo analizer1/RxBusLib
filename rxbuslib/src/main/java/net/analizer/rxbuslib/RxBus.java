@@ -154,12 +154,7 @@ public class RxBus implements Bus {
 
                 if (mSubscriberMap.containsKey(eventType)) {
                     SubscriberEvent subscriberEvent = mSubscriberMap.get(eventType);
-                    int methodLeft = subscriberEvent.unRegisterListener(listener);
-                    if (methodLeft == 0) {
-                        // no subscriber left then call onComplete
-                        // and remove this subscriber event
-                        mSubscriberMap.remove(eventType);
-                    }
+                    subscriberEvent.unRegisterListener(listener);
                 }
             }
         }
@@ -245,7 +240,11 @@ public class RxBus implements Bus {
 
     @Override
     public void removeSubscription(@NonNull EventType eventType) {
-        mSubscriberMap.remove(eventType);
+        SubscriberEvent subscriberEvent = mSubscriberMap.get(eventType);
+        if (subscriberEvent != null) {
+            subscriberEvent.unsubscribe();
+            mSubscriberMap.remove(eventType);
+        }
     }
 
     ConcurrentMap<EventType, SubscriberEvent> getSubscriptions() {
