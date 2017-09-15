@@ -60,7 +60,7 @@ public class SubscriptionAnnotationProcessor implements AnnotationProcessor {
                     if (methodList == null) {
                         methodList = new ArrayList<>();
                     }
-                    methodList.add(new SourceMethod(method, parameterClazz, listener));
+                    methodList.add(new SourceMethod<>(method, parameterClazz, listener));
                     annotatedMethods.put(eventType, methodList);
                     tagLength--;
                 } while (tagLength > 0);
@@ -98,7 +98,7 @@ public class SubscriptionAnnotationProcessor implements AnnotationProcessor {
                     if (methodList == null) {
                         methodList = new ArrayList<>();
                     }
-                    methodList.add(new SourceMethod(method, parameterClazz, listener));
+                    methodList.add(new SourceMethod<>(method, parameterClazz, listener));
                     annotatedMethods.put(eventType, methodList);
                     tagLength--;
                 } while (tagLength > 0);
@@ -136,7 +136,7 @@ public class SubscriptionAnnotationProcessor implements AnnotationProcessor {
                     if (methodList == null) {
                         methodList = new ArrayList<>();
                     }
-                    methodList.add(new SourceMethod(method, parameterClazz, listener));
+                    methodList.add(new SourceMethod<>(method, parameterClazz, listener));
                     annotatedMethods.put(eventType, methodList);
                     tagLength--;
                 } while (tagLength > 0);

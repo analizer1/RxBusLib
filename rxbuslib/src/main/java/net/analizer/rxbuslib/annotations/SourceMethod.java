@@ -9,11 +9,11 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.Subject;
 
 @SuppressWarnings("WeakerAccess")
-public class SourceMethod {
+public class SourceMethod<T> implements Observer<T> {
     /**
      * The listener object
      */
-    public Object listener;
+    public T listener;
 
     /**
      * The subscription method
@@ -26,14 +26,9 @@ public class SourceMethod {
     public Class<?> parameterClass;
 
     /**
-     * Method observer
-     */
-    public Observer<Object> observer;
-
-    /**
      * The subscription of the observer
      */
-    Disposable disposable;
+    private Disposable mDisposable;
 
     /**
      * This is the instant id of the parent class or object
@@ -42,36 +37,34 @@ public class SourceMethod {
 
     public SourceMethod(@NonNull Method method,
                         @NonNull Class<?> parameterClass,
-                        @NonNull Object listener) {
+                        @NonNull T listener) {
 
         this.method = method;
         this.parameterClass = parameterClass;
         this.listener = listener;
         this.instanceId = System.identityHashCode(listener);
+    }
 
-        this.observer = new Observer<Object>() {
-            @Override
-            public void onSubscribe(Disposable d) {
-                disposable = d;
-            }
+    @Override
+    public void onSubscribe(Disposable d) {
+        mDisposable = d;
+    }
 
-            @Override
-            public void onComplete() {
-                // TODO: 9/9/17 handle onComplete SourceMethod
-            }
+    @Override
+    public void onNext(T event) {
+        if (isOfSameType(event)) {
+            invoke(event);
+        }
+    }
 
-            @Override
-            public void onError(Throwable e) {
-                // TODO: 9/9/17 handle error SourceMethod
-            }
+    @Override
+    public void onError(Throwable e) {
+        // TODO: 9/9/17 handle error SourceMethod
+    }
 
-            @Override
-            public void onNext(Object event) {
-                if (isOfSameType(event)) {
-                    invoke(event);
-                }
-            }
-        };
+    @Override
+    public void onComplete() {
+        // TODO: 9/9/17 handle onComplete SourceMethod
     }
 
     private boolean isOfSameType(Object event) {
@@ -137,27 +130,26 @@ public class SourceMethod {
      * @param subject Subject to be observed
      * @return Subscription
      */
-    public Disposable subscribeTo(@NonNull Subject<Object> subject) {
-        if (disposable == null) {
-            subject.subscribe(observer);
+    public Disposable subscribeTo(@NonNull Subject<T> subject) {
+        if (mDisposable == null) {
+            subject.subscribe(this);
         }
 
-        return disposable;
+        return mDisposable;
     }
 
     /**
      * Un-subscribe to the previously subscribed Subject
      */
     public void unsubscribe() {
-        if (disposable != null && !disposable.isDisposed()) {
-            disposable.dispose();
+        if (mDisposable != null && !mDisposable.isDisposed()) {
+            mDisposable.dispose();
         }
 
         listener = null;
         method = null;
         parameterClass = null;
-        observer = null;
-        disposable = null;
+        mDisposable = null;
     }
 
     /**

@@ -127,6 +127,37 @@ public class MainActivity extends AppCompatActivity {
             bus.postPublish(String.format("test %s", cnt), "test");
             bus.postReplay(String.format("test %s", cnt++), "test");
         });
+
+//        Integer[] a = new Integer[] {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
+//        Observable<Integer> observable = Observable.fromArray(a);
+//        ReplaySubject<Integer> objectReplaySubject = ReplaySubject.create();
+//        objectReplaySubject
+//                .subscribeOn(Schedulers.newThread())
+//                .observeOn(AndroidSchedulers.mainThread());
+//
+//        Observer<Integer> observer = new Observer<Integer>() {
+//            @Override
+//            public void onSubscribe(Disposable d) {
+//            }
+//
+//            @Override
+//            public void onNext(Integer o) {
+//                Log.e("TEST", "next " + o.toString());
+//            }
+//
+//            @Override
+//            public void onError(Throwable e) {
+//
+//            }
+//
+//            @Override
+//            public void onComplete() {
+//                Log.e("TEST", "Complete");
+//            }
+//        };
+//        objectReplaySubject.subscribe(observer);
+//        observable.subscribe(objectReplaySubject);
+//        objectReplaySubject.subscribe(observer);
     }
 
     @Override
