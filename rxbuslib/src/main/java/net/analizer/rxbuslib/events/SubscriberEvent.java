@@ -118,12 +118,12 @@ public class SubscriberEvent {
             sourceMethod.unsubscribe();
         }
 
-        int cnt = methodList.size();
-        if (cnt == 0) {
-            complete();
-        }
+//        int cnt = methodList.size();
+//        if (cnt == 0) {
+//            complete();
+//        }
 
-        return cnt;
+        return methodList.size();
     }
 
     /**
