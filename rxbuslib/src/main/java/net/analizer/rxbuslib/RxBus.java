@@ -1,6 +1,7 @@
 package net.analizer.rxbuslib;
 
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
 import android.util.Log;
 
 import net.analizer.rxbuslib.annotations.AnnotationProcessor;
@@ -239,11 +240,28 @@ public class RxBus implements Bus {
     }
 
     @Override
-    public void removeSubscription(@NonNull EventType eventType) {
-        SubscriberEvent subscriberEvent = mSubscriberMap.get(eventType);
-        if (subscriberEvent != null) {
-            subscriberEvent.unsubscribe();
-            mSubscriberMap.remove(eventType);
+    public void removeSubscription(@Nullable EventType eventType) {
+        if (eventType != null) {
+            SubscriberEvent subscriberEvent = mSubscriberMap.get(eventType);
+
+            if (subscriberEvent != null) {
+                subscriberEvent.complete();
+                subscriberEvent.unsubscribe();
+                mSubscriberMap.remove(eventType);
+            }
+
+            return;
+        }
+
+        for (Map.Entry<EventType, SubscriberEvent> entry : mSubscriberMap.entrySet()) {
+            eventType = entry.getKey();
+            SubscriberEvent subscriberEvent = entry.getValue();
+
+            if (subscriberEvent != null) {
+                subscriberEvent.complete();
+                subscriberEvent.unsubscribe();
+                mSubscriberMap.remove(eventType);
+            }
         }
     }
 
