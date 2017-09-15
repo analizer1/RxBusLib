@@ -13,6 +13,7 @@ import net.analizer.rxbuslib.events.SubscriberBehaviorEvent;
 import net.analizer.rxbuslib.events.SubscriberEvent;
 import net.analizer.rxbuslib.events.SubscriberReplayEvent;
 import net.analizer.rxbuslib.interfaces.Bus;
+import net.analizer.rxbuslib.threads.EventThread;
 import net.analizer.rxbuslib.threads.ThreadEnforcer;
 
 import java.util.Arrays;
@@ -219,6 +220,32 @@ public class RxBus implements Bus {
     @Override
     public void postBehavior(@NonNull Object event, @NonNull String... tags) {
         post(SubscriptionType.BEHAVIOR, event, tags);
+    }
+
+    @Override
+    public void createSubscription(@NonNull EventType eventType,
+                                   @NonNull List<SourceMethod> methodList,
+                                   @NonNull EventThread observeThread,
+                                   @NonNull EventThread subscribeThread) {
+
+        SubscriberEvent subscriberEvent;
+
+        if (eventType.subscriptionType == SubscriptionType.BEHAVIOR) {
+            subscriberEvent = new SubscriberBehaviorEvent(methodList, observeThread, subscribeThread);
+
+        } else if (eventType.subscriptionType == SubscriptionType.REPLAY) {
+            subscriberEvent = new SubscriberReplayEvent(methodList, observeThread, subscribeThread);
+
+        } else {
+            subscriberEvent = new SubscriberEvent(methodList, observeThread, subscribeThread);
+        }
+
+        mSubscriberMap.put(eventType, subscriberEvent);
+    }
+
+    @Override
+    public void removeSubscription(@NonNull EventType eventType) {
+        mSubscriberMap.remove(eventType);
     }
 
     ConcurrentMap<EventType, SubscriberEvent> getSubscriptions() {
