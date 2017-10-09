@@ -1,6 +1,7 @@
 package net.analizer.rxbuslib.annotations;
 
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Log;
 
 import java.lang.reflect.Method;
@@ -164,7 +165,14 @@ public class SourceMethod<T> implements Observer<T> {
             method.invoke(listener, events);
 
         } catch (Exception e) {
-            Log.e("RxBus", e.getMessage());
+            String message = e.getMessage();
+            if (TextUtils.isEmpty(message)) {
+                message = e.getCause().getMessage();
+            }
+
+            if (!TextUtils.isEmpty(message)) {
+                Log.e("RxBus", message);
+            }
         }
     }
 
