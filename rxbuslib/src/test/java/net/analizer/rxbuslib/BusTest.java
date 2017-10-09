@@ -174,7 +174,7 @@ public class BusTest {
         assertEquals("test", catcher.events.get(0));
         bus.unRegister(catcher);
 
-        ConcurrentMap<EventType, SubscriberEvent> subscriptions = bus.getSubscriptions();
+//        ConcurrentMap<EventType, SubscriberEvent> subscriptions = bus.getSubscriptions();
 //        assertEquals(0, subscriptions.size());
     }
 
@@ -194,7 +194,7 @@ public class BusTest {
         assertEquals("test", catcher.events.get(0));
         bus.unRegister(catcher);
 
-        ConcurrentMap<EventType, SubscriberEvent> subscriptions = bus.getSubscriptions();
+//        ConcurrentMap<EventType, SubscriberEvent> subscriptions = bus.getSubscriptions();
 //        assertEquals(0, subscriptions.size());
 
         catcher.events.clear();
